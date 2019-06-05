@@ -1,19 +1,19 @@
 #Welcome to the Hypixel Core skript
-#I recommend you downloading ALL addons that are listed on the resource page.
-#To make sure you don't run into errors.
-#If you reload and there are occouring many errors? Then you most likely forget to install an addon.
+#Please install this Skript with https://www.spigotmc.org/resources/hp-core-installer-official.67257/
+#^^^ to make sure all addons are installed correctly.
+
 #I will provide support on GitHub for problems and bug reports.
-#If you change THIS skript then I will not provide support anymore.
+#I won't provide support if you edit this Skript.
 #Please only use the config / options to change things.
 
 
 options:
     prefix: &3[&b&lHypixel&3]
-    version: 1.0.3 #Don't change this version please, it will break the version checker.
+    version: 1.0.4 #Don't change this version, it will break the version checker.
 
 
 #CHANGES YOU MAKE BELOW THIS LINE ARE AT YOUR OWN RISK.
-#I WILL NOT PROVIDE SUPPORT IF YOU CHANGE THESE.
+#I WON'T PROVIDE SUPPORT IF YOU CHANGE THESE.
 
 #Config File
 #Requires SkUtilities -> Recommended
@@ -326,16 +326,27 @@ every 5 seconds:
 
 on load:
     if {FirstTimeLoaded.HypixelCore} is not set:
-        broadcast "{@prefix} &7Hello There!"
-        wait 1 second
         broadcast "{@prefix} &cI'm setting up the plugin for the first time..."
         set {FirstTimeLoaded.HypixelCore} to true
         configReset(1)
         wait 2 seconds
-        broadcast "{@prefix} &aDONE! &7Please go to the &cconfig file &7and &cchange &7the &cServer Owner section."
-        broadcast "{@prefix} &cAfterwards&7, use '&c/hypixel configreload&7' to &creload your config."
-        broadcast "{@prefix} &cEverytime you change something in the configfile, use /hypixel configreload afterwards."
+        broadcast "{@prefix} &cIf you are the owner? Use /hpowner to give yourself the owner rank."
+        broadcast "{@prefix} &fThis command works for only 1 time."
+        broadcast "{@prefix} &fOperator access is required."
 
+command /hpowner:
+    trigger:
+        if player has permission "OP":
+            if {firstaccess} is not set:
+                set yml value "Server Owner" of file "plugins/HypixelCore/config.yml" to "%player%"
+                set {firstaccess} to true
+                send "{@prefix} &cOK! Reloading config..."
+                configReload(1)
+                send "{@prefix} &f%player%, please &brejoin&f to receive the owner rank."
+                stop
+            if {firstaccess} is set:
+                send "{@prefix} &fSorry, this command is already executed."
+                send "{@prefix} &fPlease reset the config using /hypixel configreset to use it again."
 on load:
     if {ReloadWorking.HP} is set:
         clear {ReloadWorking.HP}
@@ -396,13 +407,15 @@ command /hypixel [<text>]:
                     send "{@prefix} &cA reset is already in progress."
                 else:
                     set {ConfigResetWorking.HP} to true
-                    send "{@prefix} &c&oResetting or Creating config file..."
-                    send "{@prefix} &c&lWARNING: &cThis will not Reset or Re-create the bot addon config file."
+                    send "{@prefix} &c&oResetting & Creating config file..."
                     delete file "plugins/HypixelCore/config.yml"
                     wait 2 seconds
                     configReset(1)
-                    send "{@prefix} &a&lCOMPLETED%nl%&fPlease use '&c/hypixel configreload' &fif you are done editing the config file."
+                    wait 1 second
+                    configReload(1)
+                    send "{@prefix} &a&lCOMPLETED%nl%&fuse /hpowner to setup your owner rank."
                     set {ConfigResetWorking.HP} to false
+                    clear {firstaccess}
             else:
                 send "{@prefix} &cYou don't have the correct rank to execute this."
         if argument 1 is "configreload":
